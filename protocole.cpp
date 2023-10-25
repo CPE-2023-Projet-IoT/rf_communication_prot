@@ -1,11 +1,15 @@
 #include "MicroBit.h"
+#include <cstdlib>
+#include <ctime>
+#include <string>
 
 /**
 * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
 * @return int
 */
 int keyGen() {
-
+    srand(time(0));
+    int key = rand() % 1000;
 }
 
 /**
@@ -13,7 +17,8 @@ int keyGen() {
 * @return void
 */
 void sendKey(int key) {
-
+    std::string charKey = std::to_string(key);
+    uBit.radio.datagram.send(charKey);
 }
 
 /**
@@ -21,7 +26,7 @@ void sendKey(int key) {
 * @return string
 */
 string computeKey(int key) {
-
+    
 }
 
 /**
