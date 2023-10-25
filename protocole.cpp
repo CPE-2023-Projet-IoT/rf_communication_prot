@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 
-#define PI 3,1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+#define PI 3,141592
 
 using namespace std;
 
@@ -40,18 +40,18 @@ string computeKey(string key1, string key2) {
     string concatKey="";
     
     for (int i=0; i<min(key1Size,key2Size); i++){
-        concatKey[2i] += key1[i];
-        concatKey[2i+1] += key2[i];
+        concatKey[2*i] += key1[i];
+        concatKey[2*i+1] += key2[i];
     }
 
     int newKey;
-    sscanf(concatKey, "%d", &newKey);
+    sscanf(concatKey.c_str(), "%d", &newKey);
     newKey = ((newKey*(PI * 100)/4)^9)%1000000000;
     string computedKey = to_string(newKey);
     computedKey = "$" + computedKey;
-    computedKey[2] = "&";
-    computedKey[4] = "a";
-    computedKey[5] = "e";
+    computedKey[2] = '&';
+    computedKey[4] = 'a';
+    computedKey[5] = 'e';
 
     return computedKey;
 }
@@ -79,7 +79,7 @@ string decrypt(string cipherText) {
 
     // TODO
 
-    return plainText
+    return plainText;
 }
 
 /**

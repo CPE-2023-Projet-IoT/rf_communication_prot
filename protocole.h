@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+using namespace std;
+
 /**
  * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
  * @return int
