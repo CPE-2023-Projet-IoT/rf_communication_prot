@@ -19,7 +19,7 @@ void sendKey(int key);
  * Utilise les termes générés aléatoirement pour les additionner et hasher en SHA256
  * @return string
 */
-string computeKey(int key);
+string computeKey(string key1, string key2);
 
 /**
  * Chiffre les données à envoyer
