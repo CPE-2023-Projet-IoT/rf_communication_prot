@@ -30,21 +30,44 @@ DEALINGS IN THE SOFTWARE.
 
 MicroBit uBit;
 
+bool isSessionOk = false;
+ManagedString key2;
+
+void onData(MicroBitEvent) {
+    
+    key2 = uBit.radio.datagram.recv();
+    uBit.serial.printf("Key 2 received: %s\r\n", key2.toCharArray());
+    isSessionOk = true;
+}
+
 int main()
 {
     // Initialise the micro:bit runtime.
     uBit.init();
     uBit.radio.enable();
 
-    // Insert your code here!
-    int key1 = keyGen();
+
+    // Génère la clé
+    int key1 = keyGen(&uBit);
     std::string key1Str = to_string(key1);
-    ManagedString key2 = uBit.radio.datagram.recv();
-    std::string key2Str = key2.toCharArray();
+    uBit.serial.printf("Key 1 generated: %d\r\n", key1);
 
     uBit.radio.datagram.send(key1Str.c_str());
+    uBit.serial.printf("Key 1 sent\r\nWaiting for key 2...\r\n");
 
+    // Attend la clé pour initier la connection
+    uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
+
+    while(!isSessionOk) {
+        uBit.serial.printf("Still waiting...\r\n");
+        uBit.sleep(1000);
+    }
+
+    // Connection ok
+    uBit.serial.printf("Connection ok\r\n");
+    std::string key2Str(key2.toCharArray());
     std::string session = computeKey(key1Str, key2Str);
+    uBit.serial.printf("Session key: %s\r\n", session.c_str());
 
     char temp = 'T';
     char lum = 'L';
@@ -57,8 +80,9 @@ int main()
     data[lum] = lumStr;
 
     while(1) {
-        sendRf(session, data);
-        uBit.sleep(100);
+        uBit.serial.printf("Envoie data\r\n");
+        sendRf(&uBit,session, data);
+        uBit.sleep(1000);
     }
 
     release_fiber();

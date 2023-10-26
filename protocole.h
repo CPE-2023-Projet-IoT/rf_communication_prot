@@ -6,13 +6,13 @@
  * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
  * @return int
 */
-int keyGen();
+int keyGen(MicroBit* microBit);
 
 /**
  * Envoie le nombre généré aléatoirement par RF
  * @return void
 */
-void sendKey(int key);
+void sendKey(MicroBit* microBit, int key);
 
 /**
  * Utilise les termes générés aléatoirement pour créer une clé commmune
@@ -36,10 +36,10 @@ std::string decrypt(std::string cipherText);
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(char code, std::string data) ;
+void sendData(MicroBit* microBit, char code, std::string data) ;
 
 /**
  * Protocole complet d'envoi de données
  * @return void
 */
-void sendRf(std::string sessionKey, map<char, std::string> data);
+void sendRf(MicroBit* microBit,std::string sessionKey, map<char, std::string> data);

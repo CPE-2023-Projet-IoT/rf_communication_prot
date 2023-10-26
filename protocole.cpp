@@ -5,26 +5,22 @@
 #include <string>
 #include <map>
 
-MicroBit microBit;
 
 /**
  * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
  * @return int
 */
-int keyGen() {
-    srand(time(0));
-    int key = rand() % 1000;
-
-    return (key);
+int keyGen(MicroBit* microBit) {
+    return microBit->random(999)+1;
 }
 
 /**
  * Envoie le nombre généré aléatoirement par RF
  * @return void
 */
-void sendKey(int key) {
+void sendKey(MicroBit* microBit, int key) {
     std::string charKey = to_string(key);
-    microBit.radio.datagram.send(charKey.c_str());
+    microBit->radio.datagram.send(charKey.c_str());
 }
 
 /**
@@ -83,32 +79,32 @@ std::string decrypt(std::string cipherText) {
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(char code, std::string data) {
+void sendData(MicroBit* microBit,char code, std::string data) {
 
     // Chiffre les données
     std::string encryptedCode = encrypt(std::string(1, code));
     std::string encryptedData = encrypt(data);
 
     // Envoie les données
-    microBit.radio.datagram.send(encryptedCode.c_str());
-    microBit.radio.datagram.send(encryptedData.c_str());
+    microBit->radio.datagram.send(encryptedCode.c_str());
+    microBit->radio.datagram.send(encryptedData.c_str());
 }
 
 /**
  * Protocole complet d'envoi de données
  * @return void
 */
-void sendRf(std::string sessionKey, map<char, std::string> data) {
+void sendRf(MicroBit* microBit, std::string sessionKey, map<char, std::string> data) {
 
     // Envoie la clé de session
-    microBit.radio.datagram.send(sessionKey.c_str());
+    microBit->radio.datagram.send(sessionKey.c_str());
 
     // Envoie les données
     for(auto i = data.begin(); i != data.end(); i++) {
-        sendData(i->first, i->second);
+        sendData(microBit,i->first, i->second);
     }
 
     // Reset la connexion
     std::string resetCode = "RST";
-    microBit.radio.datagram.send(resetCode.c_str());
+    microBit->radio.datagram.send(resetCode.c_str());
 }
