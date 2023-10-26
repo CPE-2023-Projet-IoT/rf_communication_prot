@@ -2,13 +2,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
-#include <iostream>
 #include <string>
 #include <map>
 
-#define PI 3,141592
-
-using namespace std;
+MicroBit microBit;
 
 /**
  * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
@@ -26,18 +23,18 @@ int keyGen() {
  * @return void
 */
 void sendKey(int key) {
-    string charKey = to_string(key);
-    uBit.radio.datagram.send(charKey);
+    std::string charKey = to_string(key);
+    microBit.radio.datagram.send(charKey.c_str());
 }
 
 /**
 * Utilise les termes générés aléatoirement pour les additionner et les hasher
-* @return string
+* @return std::string
 */
-string computeKey(string key1, string key2) {
+std::string computeKey(std::string key1, std::string key2) {
     int key1Size = key1.size();
     int key2Size = key2.size();
-    string concatKey="";
+    std::string concatKey="";
     
     for (int i=0; i<min(key1Size,key2Size); i++){
         concatKey[2*i] += key1[i];
@@ -46,8 +43,8 @@ string computeKey(string key1, string key2) {
 
     int newKey;
     sscanf(concatKey.c_str(), "%d", &newKey);
-    newKey = ((newKey*(PI * 100)/4)^9)%1000000000;
-    string computedKey = to_string(newKey);
+    newKey = ((newKey*(3 * 100)/4)^9)%1000000000;
+    std::string computedKey = to_string(newKey);
     computedKey = "$" + computedKey;
     computedKey[2] = '&';
     computedKey[4] = 'a';
@@ -58,11 +55,11 @@ string computeKey(string key1, string key2) {
 
 /**
  * Chiffre les données à envoyer
- * @return string
+ * @return std::string
 */
-string encrypt(string plainText) {
-    const string KEY = "3nCrYp710N";
-    string cipherText = plainText;
+std::string encrypt(std::string plainText) {
+    const std::string KEY = "3nCrYp710N";
+    std::string cipherText = plainText;
 
     // TODO
 
@@ -71,11 +68,11 @@ string encrypt(string plainText) {
 
 /**
  * Déchiffre les données reçues
- * @return string
+ * @return std::string
 */
-string decrypt(string cipherText) {
-    const string KEY = "3nCrYp710N";
-    string plainText = cipherText;
+std::string decrypt(std::string cipherText) {
+    const std::string KEY = "3nCrYp710N";
+    std::string plainText = cipherText;
 
     // TODO
 
@@ -83,31 +80,35 @@ string decrypt(string cipherText) {
 }
 
 /**
- * Envoie les données à partir d'une string de données non chiffrées
+ * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(char code, string data) {
+void sendData(char code, std::string data) {
 
     // Chiffre les données
-    string encryptedCode = encrypt(string(1, code));
-    string encryptedData = encrypt(data);
+    std::string encryptedCode = encrypt(std::string(1, code));
+    std::string encryptedData = encrypt(data);
 
     // Envoie les données
-    uBit.radio.datagram.send(encryptedCode);
-    uBit.radio.datagram.send(encryptedData);
+    microBit.radio.datagram.send(encryptedCode.c_str());
+    microBit.radio.datagram.send(encryptedData.c_str());
 }
 
 /**
  * Protocole complet d'envoi de données
  * @return void
 */
-void send(string sessionKey, map<char, string> data) {
+void sendRf(std::string sessionKey, map<char, std::string> data) {
 
     // Envoie la clé de session
-    uBit.radio.datagram.send(sessionKey);
+    microBit.radio.datagram.send(sessionKey.c_str());
 
     // Envoie les données
     for(auto i = data.begin(); i != data.end(); i++) {
         sendData(i->first, i->second);
     }
+
+    // Reset la connexion
+    std::string resetCode = "RST";
+    microBit.radio.datagram.send(resetCode.c_str());
 }

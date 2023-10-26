@@ -1,9 +1,6 @@
 #include "MicroBit.h"
-#include <iostream>
 #include <string>
 #include <map>
-
-using namespace std;
 
 /**
  * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
@@ -18,31 +15,31 @@ int keyGen();
 void sendKey(int key);
 
 /**
- * Utilise les termes générés aléatoirement pour les additionner et hasher en SHA256
- * @return string
+ * Utilise les termes générés aléatoirement pour créer une clé commmune
+ * @return std::string
 */
-string computeKey(string key1, string key2);
+std::string computeKey(std::string key1, std::string key2);
 
 /**
  * Chiffre les données à envoyer
- * @return string
+ * @return std::string
 */
-string encrypt(string plainText);
+std::string encrypt(std::string plainText);
 
 /**
  * Déchiffre les données reçues
- * @return string
+ * @return std::string
 */
-string decrypt(string cipherText);
+std::string decrypt(std::string cipherText);
 
 /**
- * Envoie les données à partir d'une string de données non chiffrées
+ * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(char code, string data) ;
+void sendData(char code, std::string data) ;
 
 /**
  * Protocole complet d'envoi de données
  * @return void
 */
-void send(string sessionKey, map<char, string> data);
+void sendRf(std::string sessionKey, map<char, std::string> data);
