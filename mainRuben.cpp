@@ -1,89 +1,120 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2016 British Broadcasting Corporation.
-This software is provided by Lancaster University by arrangement with the BBC.
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-*/
-
 #include "MicroBit.h"
-#include "protocole.h"
+#include <cstdlib>
+#include <ctime>
+#include <algorithm>
 #include <string>
 #include <map>
+#include <functional>
 
-MicroBit uBit;
 
-bool isSessionOk = false;
-ManagedString key2;
-
-void onData(MicroBitEvent) {
-    
-    key2 = uBit.radio.datagram.recv();
-    uBit.serial.printf("Key 2 received: %s\r\n", key2.toCharArray());
-    isSessionOk = true;
+/**
+ * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
+ * @return int
+*/
+int keyGen(MicroBit* microBit) {
+    return (microBit->random(999)+1);
 }
 
-int main()
-{
-    // Initialise the micro:bit runtime.
-    uBit.init();
-    uBit.radio.enable();
+/**
+ * Envoie le nombre généré aléatoirement par RF
+ * @return void
+*/
+void sendKey(MicroBit* microBit, int key) {
+    std::string charKey = to_string(key);
+    microBit->radio.datagram.send(charKey.c_str());
+}
+
+/**
+* Utilise les termes générés aléatoirement pour les additionner et les hasher
+* @return std::string
+*/
+std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
 
 
-    // Génère la clé
-    int key1 = keyGen(&uBit);
-    std::string key1Str = to_string(key1);
-    uBit.serial.printf("Key 1 generated: %d\r\n", key1);
+    std::string str1 (key1.c_str());
+    std::string str2 (key2.c_str());
 
-    uBit.radio.datagram.send(key1Str.c_str());
-    uBit.serial.printf("Key 1 sent\r\nWaiting for key 2...\r\n");
+    std::hash<std::string> str_hash;
+    std::string hashedKey1 = to_string((str_hash(str1)));
+    std::string hashedKey2 = to_string((str_hash(str2)));
+    microBit->serial.printf("hash1 : %s\r\n", hashedKey1.c_str());
+    microBit->serial.printf("hash2 : %s\r\n", hashedKey2.c_str());
 
-    // Attend la clé pour initier la connection
-    uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
 
-    while(!isSessionOk) {
-        uBit.serial.printf("Still waiting...\r\n");
-        uBit.sleep(1000);
+    int intHashedKey1;
+    int intHashedKey2;
+
+    sscanf(hashedKey1.c_str(), "%d", &intHashedKey1);
+    sscanf(hashedKey2.c_str(), "%d", &intHashedKey2);
+
+    int xorKey = (intHashedKey1 ^ intHashedKey2);
+    std::string computedKey = to_string(xorKey);
+    microBit->serial.printf("computed : %s\r\n", computedKey.c_str());
+
+    computedKey = "R" + computedKey;
+    computedKey[2] = 'T';
+    computedKey[4] = 'A';
+    computedKey[5] = 'E';
+
+    return computedKey;
+}
+
+/**
+ * Chiffre les données à envoyer
+ * @return std::string
+*/
+std::string encrypt(std::string plainText) {
+    const std::string KEY = "3nCrYp710N";
+    std::string cipherText = plainText;
+
+    // TODO
+
+    return cipherText;
+}
+
+/**
+ * Déchiffre les données reçues
+ * @return std::string
+*/
+std::string decrypt(std::string cipherText) {
+    const std::string KEY = "3nCrYp710N";
+    std::string plainText = cipherText;
+
+    // TODO
+
+    return plainText;
+}
+
+/**
+ * Envoie les données à partir d'une std::string de données non chiffrées
+ * @return void
+*/
+void sendData(MicroBit* microBit,char code, std::string data) {
+
+    // Chiffre les données
+    std::string encryptedCode = encrypt(std::string(1, code));
+    std::string encryptedData = encrypt(data);
+
+    // Envoie les données
+    microBit->radio.datagram.send(encryptedCode.c_str());
+    microBit->radio.datagram.send(encryptedData.c_str());
+}
+
+/**
+ * Protocole complet d'envoi de données
+ * @return void
+*/
+void sendRf(MicroBit* microBit, std::string sessionKey, map<char, std::string> data) {
+
+    // Envoie la clé de session
+    microBit->radio.datagram.send(sessionKey.c_str());
+
+    // Envoie les données
+    for(auto i = data.begin(); i != data.end(); i++) {
+        sendData(microBit,i->first, i->second);
     }
 
-    // Connection ok
-    uBit.serial.printf("Connection ok\r\n");
-    std::string key2Str(key2.toCharArray());
-    std::string session = computeKey(key1Str, key2Str);
-    uBit.serial.printf("Session key: %s\r\n", session.c_str());
-
-    char temp = 'T';
-    char lum = 'L';
-
-    std::string tempStr = "25";
-    std::string lumStr = "48";
-
-    map<char, std::string> data;
-    data[temp] = tempStr;
-    data[lum] = lumStr;
-
-    while(1) {
-        uBit.serial.printf("Envoie data\r\n");
-        sendRf(&uBit,session, data);
-        uBit.sleep(1000);
-    }
-
-    release_fiber();
+    // Reset la connexion
+    std::string resetCode = "RST";
+    microBit->radio.datagram.send(resetCode.c_str());
 }
