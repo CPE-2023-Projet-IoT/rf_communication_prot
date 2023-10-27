@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <string>
 #include <map>
+#include <functional>
 
 
 /**
@@ -11,7 +12,7 @@
  * @return int
 */
 int keyGen(MicroBit* microBit) {
-    return microBit->random(999)+1;
+    return (microBit->random(999)+1);
 }
 
 /**
@@ -27,20 +28,29 @@ void sendKey(MicroBit* microBit, int key) {
 * Utilise les termes générés aléatoirement pour les additionner et les hasher
 * @return std::string
 */
-std::string computeKey(std::string key1, std::string key2) {
-    int key1Size = key1.size();
-    int key2Size = key2.size();
-    std::string concatKey="";
-    
-    for (int i=0; i<min(key1Size,key2Size); i++){
-        concatKey[2*i] += key1[i];
-        concatKey[2*i+1] += key2[i];
-    }
+std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
 
-    int newKey;
-    sscanf(concatKey.c_str(), "%d", &newKey);
-    newKey = ((newKey*(3 * 100)/4)^9)%1000000000;
-    std::string computedKey = to_string(newKey);
+
+    std::string str1 (key1.c_str());
+    std::string str2 (key2.c_str());
+
+    std::hash<std::string> str_hash;
+    std::string hashedKey1 = to_string((str_hash(str1)));
+    std::string hashedKey2 = to_string((str_hash(str2)));
+    microBit->serial.printf("hash1 : %s\r\n", hashedKey1.c_str());
+    microBit->serial.printf("hash2 : %s\r\n", hashedKey2.c_str());
+
+
+    int intHashedKey1;
+    int intHashedKey2;
+
+    sscanf(hashedKey1.c_str(), "%d", &intHashedKey1);
+    sscanf(hashedKey2.c_str(), "%d", &intHashedKey2);
+
+    int xorKey = (intHashedKey1 ^ intHashedKey2);
+    std::string computedKey = to_string(xorKey);
+    microBit->serial.printf("computed : %s\r\n", computedKey.c_str());
+
     computedKey = "$" + computedKey;
     computedKey[2] = '&';
     computedKey[4] = 'a';

@@ -18,7 +18,7 @@ void sendKey(MicroBit* microBit, int key);
  * Utilise les termes générés aléatoirement pour créer une clé commmune
  * @return std::string
 */
-std::string computeKey(std::string key1, std::string key2);
+std::string computeKey(MicroBit* microBit, std::string key1, std::string key2);
 
 /**
  * Chiffre les données à envoyer
