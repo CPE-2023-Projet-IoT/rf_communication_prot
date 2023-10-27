@@ -25,7 +25,7 @@ void sendKey(MicroBit* microBit, int key) {
 }
 
 /**
-* Utilise les termes générés aléatoirement pour créer une clé de session commune
+* Utilise les termes générés aléatoirement pour les additionner et les hasher
 * @return std::string
 */
 std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
