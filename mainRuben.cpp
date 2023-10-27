@@ -66,7 +66,7 @@ int main()
     // Connection ok
     uBit.serial.printf("Connection ok\r\n");
     std::string key2Str(key2.toCharArray());
-    std::string session = computeKey(key1Str, key2Str);
+    std::string session = computeKey(&uBit, key1Str, key2Str);
     uBit.serial.printf("Session key: %s\r\n", session.c_str());
 
     char temp = 'T';
