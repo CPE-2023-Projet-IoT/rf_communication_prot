@@ -51,10 +51,10 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
     std::string computedKey = to_string(xorKey);
     microBit->serial.printf("computed : %s\r\n", computedKey.c_str());
 
-    computedKey = "$" + computedKey;
-    computedKey[2] = '&';
-    computedKey[4] = 'a';
-    computedKey[5] = 'e';
+    computedKey = "R" + computedKey;
+    computedKey[2] = 'T';
+    computedKey[4] = 'A';
+    computedKey[5] = 'E';
 
     return computedKey;
 }
