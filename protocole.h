@@ -21,22 +21,16 @@ void sendKey(MicroBit* microBit, int key);
 std::string computeKey(MicroBit* microBit, std::string key1, std::string key2);
 
 /**
- * Chiffre les données à envoyer
+ * Chiffre/déchiffre les données à envoyer
  * @return std::string
 */
 std::string encrypt(std::string plainText);
 
 /**
- * Déchiffre les données reçues
- * @return std::string
-*/
-std::string decrypt(std::string cipherText);
-
-/**
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(MicroBit* microBit, char code, std::string data) ;
+void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) 
 
 /**
  * Protocole complet d'envoi de données
