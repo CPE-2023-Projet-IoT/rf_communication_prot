@@ -60,40 +60,34 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
 }
 
 /**
- * Chiffre les données à envoyer
+ * Chiffre/déchiffre les données à envoyer
  * @return std::string
 */
-std::string encrypt(std::string plainText) {
-    const std::string KEY = "3nCrYp710N";
-    std::string cipherText = plainText;
+std::string encryp(std::string plainText) {
+    const std::string key = "3nCrYp710N";
+	int dataLen = plainText.size();
+	int keyLen = key.size();
+	std::string output = plainText;
 
-    // TODO
+	for (int i = 0; i < dataLen; ++i) {
+		output[i] = plainText[i] ^ key[i % keyLen];
+	}
 
-    return cipherText;
-}
-
-/**
- * Déchiffre les données reçues
- * @return std::string
-*/
-std::string decrypt(std::string cipherText) {
-    const std::string KEY = "3nCrYp710N";
-    std::string plainText = cipherText;
-
-    // TODO
-
-    return plainText;
+	return output;
 }
 
 /**
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(MicroBit* microBit,char code, std::string data) {
+void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) {
 
     // Chiffre les données
     std::string encryptedCode = encrypt(std::string(1, code));
     std::string encryptedData = encrypt(data);
+
+    // Envoie le code
+    microBit->radio.datagram.send(sessionKey.c_str());
 
     // Envoie les données
     microBit->radio.datagram.send(encryptedCode.c_str());
@@ -106,15 +100,8 @@ void sendData(MicroBit* microBit,char code, std::string data) {
 */
 void sendRf(MicroBit* microBit, std::string sessionKey, map<char, std::string> data) {
 
-    // Envoie la clé de session
-    microBit->radio.datagram.send(sessionKey.c_str());
-
     // Envoie les données
     for(auto i = data.begin(); i != data.end(); i++) {
-        sendData(microBit,i->first, i->second);
+        sendData(sessionKey, microBit,i->first, i->second);
     }
-
-    // Reset la connexion
-    std::string resetCode = "RST";
-    microBit->radio.datagram.send(resetCode.c_str());
 }
