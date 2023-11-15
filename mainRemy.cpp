@@ -39,16 +39,31 @@ void onData(MicroBitEvent)
     if (session == true){
         ManagedString s = uBit.radio.datagram.recv();
 
-        uBit.serial.printf("Passerelle session deja initiee, data reçue : %s\r\n", s.toCharArray());
-
         // Dechiffrement des données
         std::string encryptedData = s.toCharArray();
-        std::vector<std::string> decryptedData = decrypt(encryptedData, sessionKey);
+        // std::vector<std::string> decryptedData = decrypt(encryptedData, sessionKey);
+
+        // uBit.serial.printf("data 0 reçue : %s\r\n", decryptedData[0].c_str());
+        // uBit.serial.printf("data 1 reçue : %s\r\n", decryptedData[1].c_str());
+        // uBit.serial.printf("data 2 reçue : %s\r\n", decryptedData[2].c_str());
+
+        // uBit.serial.printf("data reçue : %s\r\n", s.toCharArray());
+
+        std::string rcvKey = encryptedData.substr(0, 11);
+        //uBit.serial.printf("clé reçu : %s\r\n", rcvKey.c_str());
 
         // Test si sessionKey OK
-        if(decryptedData[0] == sessionKey) {
-            uBit.serial.send(decryptedData[1].c_str());
-            uBit.serial.send(decryptedData[2].c_str());
+        if(rcvKey == sessionKey) {
+            // uBit.serial.send(decryptedData[1].c_str());
+            // uBit.serial.send(decryptedData[2].c_str());
+            std::string code = encryptedData.substr(12, 1);
+            std::string data = encryptedData.substr(14);
+            if (code == "w") {
+                uBit.serial.printf(data.c_str());
+            } else {
+                uBit.serial.printf(code.c_str());
+                uBit.serial.printf(data.c_str());
+            }
         }
         
     } else {
@@ -57,20 +72,20 @@ void onData(MicroBitEvent)
 
         int key1 = keyGen(&uBit);
         std::string key1Str = to_string(key1);
-        uBit.serial.printf("Passerelle key Gen : %d\n", key1);
+        // uBit.serial.printf("Passerelle key Gen : %d\n\r", key1);
 
         std::string key2Str(s.toCharArray());
         sessionKey = computeKey(&uBit, s.toCharArray(), key1Str);
-        uBit.serial.printf("Size %d\r\n",sessionKey.size());
-        for(unsigned int i = 0; i < sessionKey.capacity();i++)
-        {
-            uBit.serial.send(sessionKey[i]);
-        }
+        // uBit.serial.printf("Size %d\r\n",sessionKey.size());
+        // for(unsigned int i = 0; i < sessionKey.capacity();i++)
+        // {
+        //     uBit.serial.send(sessionKey[i]);
+        // }
 
-        uBit.serial.printf("Passerelle last receive\r\n");
-        uBit.serial.printf(s.toCharArray());
-        uBit.serial.printf("Passerelle sessionKey : %s\n", sessionKey.c_str());
-        uBit.sleep(2000);
+        // uBit.serial.printf("Passerelle last receive\r\n");
+        // uBit.serial.printf(s.toCharArray());
+        // uBit.serial.printf("Passerelle sessionKey : %s\n\r", sessionKey.c_str());
+        uBit.sleep(1000);
         uBit.radio.datagram.send(key1Str.c_str());
     }
 
@@ -84,7 +99,7 @@ int main()
     uBit.init();
     uBit.radio.enable();
 
-    uBit.serial.printf("début\r\n");
+    // uBit.serial.printf("début\r\n");
     
     uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
 

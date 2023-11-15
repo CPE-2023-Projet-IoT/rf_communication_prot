@@ -17,15 +17,21 @@ ssd1306 screen(&uBit, &i2c, &P1);
 bool isSessionOk = false;
 ManagedString key2;
 std::string session;
+std::string order = "TLHP";
 
 void onData(MicroBitEvent) {
-    
     key2 = uBit.radio.datagram.recv();
-    uBit.serial.printf("Key 2 received: %s\r\n", key2.toCharArray());
+    uBit.serial.printf("Meteo key 2 received: %s\r\n", key2.toCharArray());
     isSessionOk = true;
 }
 
-void display_rf_loop(bme280 bme, tsl256x tsl) {
+void onReceive(MicroBitEvent) {
+    ManagedString s = uBit.radio.datagram.recv();
+    uBit.serial.printf("Meteo order received: %s\r\n", s.toCharArray());
+    order = s.toCharArray();
+}
+
+void display_rf_loop(bme280 bme, tsl256x tsl, std::string order) {
 
     // INIT BME
     uint32_t pressure = 0;
@@ -39,48 +45,49 @@ void display_rf_loop(bme280 bme, tsl256x tsl) {
 
     // Récupération des valeurs
     bme.sensor_read(&pressure, &temp, &humidite);
-    int tempe = bme.compensate_temperature(temp);
-    int press = bme.compensate_pressure(pressure)/100;
-    int humi = bme.compensate_humidity(humidite);
+    int tempInt = bme.compensate_temperature(temp);
+    int pressInt = bme.compensate_pressure(pressure)/100;
+    int humiInt = bme.compensate_humidity(humidite);
     tsl.sensor_read(&comb, &ir, &lux);
 
+    // Récupération de l'ordre
+    int tempOrder = strchr(order.c_str(), 'T') + 1;
+    int humOrder = strchr(order.c_str(), 'H') + 1;
+    int pressOrder = strchr(order.c_str(), 'P') + 1;
+    int lumOrder = strchr(order.c_str(), 'L') + 1;
+
     // Affichage BME
-    ManagedString line = "Temp:" + ManagedString(tempe/100) + "." + ManagedString(tempe%100) +" C\r\n";
-    screen.display_line(1,0,line.toCharArray());
+    ManagedString line = "Temp:" + ManagedString(tempInt/100) + "." + ManagedString(tempInt%100) +" C\r\n";
+    screen.display_line(tempOrder,0,line.toCharArray());
 
-    line = "Humi:" + ManagedString(humi/100) + "." + ManagedString(humi%100)+" rH\r\n";
-    screen.display_line(2,0,line.toCharArray());
+    line = "Humi:" + ManagedString(humiInt/100) + "." + ManagedString(humiInt%100)+" rH\r\n";
+    screen.display_line(humOrder,0,line.toCharArray());
 
-    line = "Press:" + ManagedString(press) +" hPa\r\n";
-    screen.display_line(3,0,line.toCharArray());
+    line = "Press:" + ManagedString(pressInt) +" hPa\r\n";
+    screen.display_line(pressOrder,0,line.toCharArray());
 
     // Affichage TSL
     line = "Lux:" + ManagedString((int)lux) + "\r\n";
-    screen.display_line(4,0,line.toCharArray());
-
+    screen.display_line(lumOrder,0,line.toCharArray());
 
     // Send data
     char tempChar = 'T';
-    char lum = 'L';
-    char hum = 'H';
+    char lumChar = 'L';
+    char humChar = 'H';
     char pressChar = 'P';
-
-    std::string tempStr = to_string(tempe);
-    std::string lumStr = to_string(lux);
-    std::string pressStr = to_string(press);
-    std::string humStr = to_string(humi);
 
     map<char, std::string> data;
 
-    data[tempChar] = tempStr;
-    data[lum] = lumStr;
-    data[pressChar] = pressStr;
-    data[hum] = humStr;
-    uBit.serial.printf("Meteo send data\r\n");
+    data[tempChar] = to_string(tempInt);
+    data[lumChar] = to_string(lux);
+    data[pressChar] = to_string(pressInt);
+    date[humChar] = to_string(humiInt);
+    uBit.serial.printf("Send data\r\n");
     sendRf(&uBit,session, data);
 
     // Update screen
     screen.update_screen();
+
 }
 
 int main() {
@@ -118,7 +125,10 @@ int main() {
 
         // Affichage
         uBit.serial.printf("Meteo refresh screen\r\n");
-        display_rf_loop(bme, tsl);
+        display_rf_loop(bme, tsl, order);
+    
+        // Reception d'une info de la passerelle
+        uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onReceive);
 
         uBit.sleep(1000);
     }

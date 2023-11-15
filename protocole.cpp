@@ -96,6 +96,7 @@ std::vector<std::string> decrypt(std::string encryptedData, std::string key) {
 
     res.push_back (encryptedData.substr(pos_start));
     return res;
+}
 
 /**
  * Envoie les données à partir d'une std::string de données non chiffrées
@@ -125,4 +126,6 @@ void sendRf(MicroBit* microBit, std::string sessionKey, map<char, std::string> d
     for(auto i = data.begin(); i != data.end(); i++) {
         sendData(microBit, sessionKey,i->first, i->second);
     }
+    std::string toSend = sessionKey + " " + "w" + " " + "\n\r";
+    microBit->radio.datagram.send(toSend.c_str());
 }
