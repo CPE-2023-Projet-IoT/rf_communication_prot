@@ -1,6 +1,7 @@
 #include "MicroBit.h"
 #include <string>
 #include <map>
+#include <vector>
 
 /**
  * Génère un nombre aléatoire entre 1 et 1000 qui servira de terme pour l'addition afin de convenir d'une clé de session commune
@@ -30,10 +31,16 @@ std::string encrypt(std::string plainText);
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
-void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) 
+void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data);
 
 /**
  * Protocole complet d'envoi de données
  * @return void
 */
 void sendRf(MicroBit* microBit,std::string sessionKey, map<char, std::string> data);
+
+/**
+ * Déchiffre les données reçues par la carte connectée à la passerelle
+ * @return std::vector<string> 
+*/
+std::vector<std::string> decrypt(std::string encryptedData);

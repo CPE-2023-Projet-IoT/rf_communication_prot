@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <vector>
 
 
 /**
@@ -77,21 +78,41 @@ std::string encryp(std::string plainText) {
 }
 
 /**
+ * Déchiffre les données reçues par la carte connectée à la passerelle
+ * @return std::vector<string> 
+*/
+std::vector<std::string> decrypt(std::string encryptedData) {
+    std::string delimiter = " ";
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    std::string token;
+    std::vector<std::string> res;
+
+    while ((pos_end = encryptedData.find(delimiter, pos_start)) != std::string::npos) {
+        token = encryptedData.substr(pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
+/**
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
 void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) {
 
     // Chiffre les données
+    std::string encryptedKey = encrypt(sessionKey);
     std::string encryptedCode = encrypt(std::string(1, code));
     std::string encryptedData = encrypt(data);
 
-    // Envoie le code
-    microBit->radio.datagram.send(sessionKey.c_str());
+    // Concatène les données
+    std::string toSend = encryptedKey + " " + encryptedCode + " " + encryptedData;
 
     // Envoie les données
-    microBit->radio.datagram.send(encryptedCode.c_str());
-    microBit->radio.datagram.send(encryptedData.c_str());
+    microBit->radio.datagram.send(toSend.c_str());
 }
 
 /**

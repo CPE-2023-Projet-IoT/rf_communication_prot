@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "protocole.h"
 #include <string>
 #include <map>
+#include <vector>
 
 MicroBit uBit;
 
@@ -39,6 +40,16 @@ void onData(MicroBitEvent)
         ManagedString s = uBit.radio.datagram.recv();
 
         uBit.serial.printf("session deja initiee, data reçue : %s\r\n", s.toCharArray());
+
+        // Dechiffrement des données
+        std::string encryptedData = s.toCharArray();
+        std::vector<std::string> decryptedData = decrypt(encryptedData);
+
+        // Affichage des données
+        for (unsigned int i = 0; i < decryptedData.size(); i++) {
+            uBit.serial.printf("Donnée %d : %s\r\n", i, decryptedData[i].c_str());
+        }
+        
     } else {
         session = true;
         ManagedString s = uBit.radio.datagram.recv();

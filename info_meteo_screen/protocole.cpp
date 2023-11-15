@@ -83,15 +83,15 @@ std::string encryp(std::string plainText) {
 void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) {
 
     // Chiffre les données
+    std::string encryptedKey = encrypt(sessionKey);
     std::string encryptedCode = encrypt(std::string(1, code));
     std::string encryptedData = encrypt(data);
 
-    // Envoie le code
-    microBit->radio.datagram.send(sessionKey.c_str());
+    // Concatène les données
+    std::string toSend = encryptedKey + encryptedCode + encryptedData;
 
     // Envoie les données
-    microBit->radio.datagram.send(encryptedCode.c_str());
-    microBit->radio.datagram.send(encryptedData.c_str());
+    microBit->radio.datagram.send(toSend.c_str());
 }
 
 /**
