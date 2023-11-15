@@ -16,6 +16,7 @@ ssd1306 screen(&uBit, &i2c, &P1);
 // Session management
 bool isSessionOk = false;
 ManagedString key2;
+std::string session;
 
 void onData(MicroBitEvent) {
     
@@ -109,7 +110,7 @@ int main() {
     // Connection ok
     uBit.serial.printf("Meteo connection ok\r\n");
     std::string key2Str(key2.toCharArray());
-    std::string session = computeKey(&uBit, key1Str, key2Str);
+    session = computeKey(&uBit, key1Str, key2Str);
     uBit.serial.printf("Meteo session key: %s\r\n", session.c_str());
 
     // Boucle de traitement

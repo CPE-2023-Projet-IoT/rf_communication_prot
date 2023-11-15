@@ -65,6 +65,7 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
  * @return std::string
 */
 std::string encrypt(std::string plainText, std::string key) {
+    /*
 	int dataLen = plainText.size();
 	int keyLen = key.size();
 	std::string output = plainText;
@@ -73,7 +74,8 @@ std::string encrypt(std::string plainText, std::string key) {
 		output[i] = plainText[i] ^ key[i % keyLen];
 	}
 
-	return output;
+	return output;*/
+    return plainText;
 }
 
 /**
@@ -94,7 +96,6 @@ std::vector<std::string> decrypt(std::string encryptedData, std::string key) {
 
     res.push_back (encryptedData.substr(pos_start));
     return res;
-}
 
 /**
  * Envoie les données à partir d'une std::string de données non chiffrées
