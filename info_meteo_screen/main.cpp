@@ -59,10 +59,10 @@ void display_rf_loop(bme280 bme, tsl256x tsl) {
 
 
     // Send data
-    char temp = 'T';
+    char tempChar = 'T';
     char lum = 'L';
     char hum = 'H';
-    char press = 'P';
+    char pressChar = 'P';
 
     std::string tempStr = to_string(tempe);
     std::string lumStr = to_string(lux);
@@ -71,10 +71,10 @@ void display_rf_loop(bme280 bme, tsl256x tsl) {
 
     map<char, std::string> data;
 
-    data[temp] = tempStr;
+    data[tempChar] = tempStr;
     data[lum] = lumStr;
-    data[press] = pressStr;
-    date[hum] = humStr;
+    data[pressChar] = pressStr;
+    data[hum] = humStr;
     uBit.serial.printf("Meteo send data\r\n");
     sendRf(&uBit,session, data);
 
