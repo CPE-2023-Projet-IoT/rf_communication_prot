@@ -45,9 +45,10 @@ void onData(MicroBitEvent)
         std::string encryptedData = s.toCharArray();
         std::vector<std::string> decryptedData = decrypt(encryptedData, sessionKey);
 
-        // Affichage des données
-        for (unsigned int i = 0; i < decryptedData.size(); i++) {
-            uBit.serial.printf("Donnée %d : %s\r\n", i, decryptedData[i].c_str());
+        // Test si sessionKey OK
+        if(decryptedData[0] == sessionKey) {
+            uBit.serial.send(decryptedData[1].c_str());
+            uBit.serial.send(decryptedData[2].c_str());
         }
         
     } else {
