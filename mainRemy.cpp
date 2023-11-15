@@ -43,7 +43,7 @@ void onData(MicroBitEvent)
 
         // Dechiffrement des données
         std::string encryptedData = s.toCharArray();
-        std::vector<std::string> decryptedData = decrypt(encryptedData);
+        std::vector<std::string> decryptedData = decrypt(encryptedData, sessionKey);
 
         // Affichage des données
         for (unsigned int i = 0; i < decryptedData.size(); i++) {

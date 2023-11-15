@@ -25,7 +25,7 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2);
  * Chiffre/déchiffre les données à envoyer
  * @return std::string
 */
-std::string encrypt(std::string plainText);
+std::string encrypt(std::string plainText, std::string key);
 
 /**
  * Envoie les données à partir d'une std::string de données non chiffrées
@@ -43,4 +43,4 @@ void sendRf(MicroBit* microBit,std::string sessionKey, map<char, std::string> da
  * Déchiffre les données reçues par la carte connectée à la passerelle
  * @return std::vector<string> 
 */
-std::vector<std::string> decrypt(std::string encryptedData);
+std::vector<std::string> decrypt(std::string encryptedData, std::string key);

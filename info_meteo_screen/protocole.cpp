@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <vector>
 
 
 /**
@@ -63,8 +64,7 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
  * Chiffre/déchiffre les données à envoyer
  * @return std::string
 */
-std::string encryp(std::string plainText) {
-    const std::string key = "3nCrYp710N";
+std::string encrypt(std::string plainText, std::string key) {
 	int dataLen = plainText.size();
 	int keyLen = key.size();
 	std::string output = plainText;
@@ -77,18 +77,38 @@ std::string encryp(std::string plainText) {
 }
 
 /**
+ * Déchiffre les données reçues par la carte connectée à la passerelle
+ * @return std::vector<string> 
+*/
+std::vector<std::string> decrypt(std::string encryptedData, std::string key) {
+    std::string delimiter = " ";
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    std::string token;
+    std::vector<std::string> res;
+
+    while ((pos_end = encryptedData.find(delimiter, pos_start)) != std::string::npos) {
+        token = encryptedData.substr(pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (decrypt(token, key));
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
+/**
  * Envoie les données à partir d'une std::string de données non chiffrées
  * @return void
 */
 void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) {
 
     // Chiffre les données
-    std::string encryptedKey = encrypt(sessionKey);
-    std::string encryptedCode = encrypt(std::string(1, code));
-    std::string encryptedData = encrypt(data);
+    std::string encryptedKey = encrypt(sessionKey, sessionKey);
+    std::string encryptedCode = encrypt(std::string(1, code), sessionKey);
+    std::string encryptedData = encrypt(data, sessionKey);
 
     // Concatène les données
-    std::string toSend = encryptedKey + encryptedCode + encryptedData;
+    std::string toSend = encryptedKey + " " + encryptedCode + " " + encryptedData;
 
     // Envoie les données
     microBit->radio.datagram.send(toSend.c_str());
