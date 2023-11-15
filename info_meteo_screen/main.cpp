@@ -75,7 +75,7 @@ void display_rf_loop(bme280 bme, tsl256x tsl) {
     data[lum] = lumStr;
     data[press] = pressStr;
     date[hum] = humStr;
-    uBit.serial.printf("Send data\r\n");
+    uBit.serial.printf("Meteo send data\r\n");
     sendRf(&uBit,session, data);
 
     // Update screen
@@ -93,30 +93,30 @@ int main() {
     // Génère la clé
     int key1 = keyGen(&uBit);
     std::string key1Str = to_string(key1);
-    uBit.serial.printf("Key 1 generated: %d\r\n", key1);
+    uBit.serial.printf("Meteo key 1 generated: %d\r\n", key1);
 
     uBit.radio.datagram.send(key1Str.c_str());
-    uBit.serial.printf("Key 1 sent\r\nWaiting for key 2...\r\n");
+    uBit.serial.printf("Meteo key 1 sent\r\nWaiting for key 2...\r\n");
 
     // Attend la clé pour initier la connection
     uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
 
     while(!isSessionOk) {
-        uBit.serial.printf("Still waiting...\r\n");
+        uBit.serial.printf("Meteo still waiting...\r\n");
         uBit.sleep(1000);
     }
 
     // Connection ok
-    uBit.serial.printf("Connection ok\r\n");
+    uBit.serial.printf("Meteo connection ok\r\n");
     std::string key2Str(key2.toCharArray());
     std::string session = computeKey(&uBit, key1Str, key2Str);
-    uBit.serial.printf("Session key: %s\r\n", session.c_str());
+    uBit.serial.printf("Meteo session key: %s\r\n", session.c_str());
 
     // Boucle de traitement
     while(1) {
 
         // Affichage
-        uBit.serial.printf("Refresh screen\r\n");
+        uBit.serial.printf("Meteo refresh screen\r\n");
         display_rf_loop(bme, tsl);
 
         uBit.sleep(1000);

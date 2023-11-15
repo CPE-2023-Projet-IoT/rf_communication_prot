@@ -89,10 +89,10 @@ std::vector<std::string> decrypt(std::string encryptedData, std::string key) {
     while ((pos_end = encryptedData.find(delimiter, pos_start)) != std::string::npos) {
         token = encryptedData.substr(pos_start, pos_end - pos_start);
         pos_start = pos_end + delim_len;
-        res.push_back (decrypt(token, key));
+        res.push_back(encrypt(token, key));
     }
 
-    res.push_back (s.substr (pos_start));
+    res.push_back (encryptedData.substr(pos_start));
     return res;
 }
 
@@ -122,6 +122,6 @@ void sendRf(MicroBit* microBit, std::string sessionKey, map<char, std::string> d
 
     // Envoie les données
     for(auto i = data.begin(); i != data.end(); i++) {
-        sendData(sessionKey, microBit,i->first, i->second);
+        sendData(microBit, sessionKey,i->first, i->second);
     }
 }

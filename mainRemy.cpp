@@ -39,7 +39,7 @@ void onData(MicroBitEvent)
     if (session == true){
         ManagedString s = uBit.radio.datagram.recv();
 
-        uBit.serial.printf("session deja initiee, data reçue : %s\r\n", s.toCharArray());
+        uBit.serial.printf("Passerelle session deja initiee, data reçue : %s\r\n", s.toCharArray());
 
         // Dechiffrement des données
         std::string encryptedData = s.toCharArray();
@@ -57,7 +57,7 @@ void onData(MicroBitEvent)
 
         int key1 = keyGen(&uBit);
         std::string key1Str = to_string(key1);
-        uBit.serial.printf("key Gen : %d\n", key1);
+        uBit.serial.printf("Passerelle key Gen : %d\n", key1);
 
         std::string key2Str(s.toCharArray());
         sessionKey = computeKey(&uBit, s.toCharArray(), key1Str);
@@ -67,9 +67,9 @@ void onData(MicroBitEvent)
             uBit.serial.send(sessionKey[i]);
         }
 
-        uBit.serial.printf("last receive\r\n");
+        uBit.serial.printf("Passerelle last receive\r\n");
         uBit.serial.printf(s.toCharArray());
-        uBit.serial.printf("sessionKey : %s\n", sessionKey.c_str());
+        uBit.serial.printf("Passerelle sessionKey : %s\n", sessionKey.c_str());
         uBit.sleep(2000);
         uBit.radio.datagram.send(key1Str.c_str());
     }
