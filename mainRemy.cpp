@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 #include "protocole.h"
 #include <string>
 #include <map>
-#include <vector>
 
 MicroBit uBit;
 
@@ -36,18 +35,22 @@ std::string sessionKey;
 
 void onData(MicroBitEvent)
 {
+   /*
+    *   if (uBit.serial.isReadable()==1){
+    *       ManagedString s = uBit.serial.read(sizeof(char)*3);
+    *        uBit.display.scroll(s.toCharArray());
+    *        uBit.radio.datagram.send(s.toCharArray());
+    *   }
+    */
+
     if (session == true){
         ManagedString s = uBit.radio.datagram.recv();
 
         // Dechiffrement des données
         std::string encryptedData = s.toCharArray();
-        // std::vector<std::string> decryptedData = decrypt(encryptedData, sessionKey);
+        std::string decryptedData = decrypt(encryptedData, sessionKey);
 
-        // uBit.serial.printf("data 0 reçue : %s\r\n", decryptedData[0].c_str());
-        // uBit.serial.printf("data 1 reçue : %s\r\n", decryptedData[1].c_str());
-        // uBit.serial.printf("data 2 reçue : %s\r\n", decryptedData[2].c_str());
-
-        // uBit.serial.printf("data reçue : %s\r\n", s.toCharArray());
+        // uBit.serial.printf("data reçue : %s\r\n", decryptedData.c_str());
 
         std::string rcvKey = encryptedData.substr(0, 11);
         //uBit.serial.printf("clé reçu : %s\r\n", rcvKey.c_str());
@@ -91,6 +94,17 @@ void onData(MicroBitEvent)
 
 }
 
+void dataReceived(){
+    if (session == true){
+        ManagedString s = uBit.serial.read(uBit.serial.getRxBufferSize());
+        //uBit.display.scroll(s.toCharArray())
+        ;
+        std::string toSend = sessionKey + " " + to_string(s);
+        uBit.radio.datagram.send(toSend.c_str());
+    } else {
+        ubit.serial.send("Pas encore de communication avec le client");
+    }
+}
 
 int main()
 {
@@ -103,6 +117,11 @@ int main()
     
     uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
 
-    release_fiber();
+    //release_fiber();
+    while (1){
+        uBit.sleep(1000);
+        if (uBit.serial.getRxBufferSize()>0){
+            dataReceived();
+        }
+    }
 }
-

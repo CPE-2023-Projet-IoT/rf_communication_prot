@@ -5,7 +5,6 @@
 #include <string>
 #include <map>
 #include <functional>
-#include <vector>
 
 
 /**
@@ -61,41 +60,39 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
 }
 
 /**
- * Chiffre/déchiffre les données à envoyer
- * @return std::string
+* Chiffre le texte en utilisant une clé alphanumérique
+* @param texte Texte à chiffrer
+* @param cle Clé alphanumérique
+*
+* @return std::string
 */
-std::string encrypt(std::string plainText, std::string key) {
-    /*
-	int dataLen = plainText.size();
-	int keyLen = key.size();
-	std::string output = plainText;
-
-	for (int i = 0; i < dataLen; ++i) {
-		output[i] = plainText[i] ^ key[i % keyLen];
-	}
-
-	return output;*/
-    return plainText;
+std::string encrypt(const std::string &texte, const std::string &cle) {
+    std::string texteChiffre = texte;
+    int longueurCle = cle.length();
+    
+    for (size_t i = 0; i < texte.length(); ++i) {
+        texteChiffre[i] = (texte[i] ^ cle[i % longueurCle]) % 94 + 32;
+    }
+    
+    return texteChiffre;
 }
 
 /**
- * Déchiffre les données reçues par la carte connectée à la passerelle
- * @return std::vector<string> 
+* Déchiffre le texte en utilisant une clé alphanumérique
+* @param textChiffre Texte à déchiffrer
+* @param cle Clé alphanumérique
+*
+* @return std::string
 */
-std::vector<std::string> decrypt(std::string encryptedData, std::string key) {
-    std::string delimiter = " ";
-    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-    std::string token;
-    std::vector<std::string> res;
-
-    while ((pos_end = encryptedData.find(delimiter, pos_start)) != std::string::npos) {
-        token = encryptedData.substr(pos_start, pos_end - pos_start);
-        pos_start = pos_end + delim_len;
-        res.push_back(encrypt(token, key));
+std::string decrypt(const std::string &texteChiffre, const std::string &cle) {
+    std::string texteDechiffre = texteChiffre;
+    int longueurCle = cle.length();
+    
+    for (size_t i = 0; i < texteChiffre.length(); ++i) {
+        texteDechiffre[i] = (texteChiffre[i] ^ cle[i % longueurCle]) % 94 + 32;
     }
-
-    res.push_back (encryptedData.substr(pos_start));
-    return res;
+    
+    return texteDechiffre;
 }
 
 /**
@@ -105,12 +102,9 @@ std::vector<std::string> decrypt(std::string encryptedData, std::string key) {
 void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) {
 
     // Chiffre les données
-    std::string encryptedKey = encrypt(sessionKey, sessionKey);
-    std::string encryptedCode = encrypt(std::string(1, code), sessionKey);
-    std::string encryptedData = encrypt(data, sessionKey);
 
     // Concatène les données
-    std::string toSend = encryptedKey + " " + encryptedCode + " " + encryptedData;
+    std::string toSend = encrypt(encryptedKey + " " + encryptedCode + " " + encryptedData);
 
     // Envoie les données
     microBit->radio.datagram.send(toSend.c_str());
@@ -126,6 +120,6 @@ void sendRf(MicroBit* microBit, std::string sessionKey, map<char, std::string> d
     for(auto i = data.begin(); i != data.end(); i++) {
         sendData(microBit, sessionKey,i->first, i->second);
     }
-    std::string toSend = sessionKey + " " + "w" + " " + "\n\r";
+    std::string toSend = encrypt(sessionKey + " " + "w" + " " + "\n\r");
     microBit->radio.datagram.send(toSend.c_str());
 }
