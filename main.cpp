@@ -99,6 +99,18 @@ void onData(MicroBitEvent)
 
 }
 
+void dataReceived(){
+    if (session == true){
+        ManagedString s = uBit.serial.read(uBit.serial.getRxBufferSize());
+        //uBit.display.scroll(s.toCharArray())
+        ;
+        std::string toSend = sessionKey + " " + to_string(s);
+        uBit.radio.datagram.send(toSend.c_str());
+    } else {
+        ubit.serial.send("Pas encore de communication avec le client");
+    }
+}
+
 int main()
 {
     // Initialise the micro:bit runtime.
@@ -112,11 +124,9 @@ int main()
 
     //release_fiber();
     while (1){
-        uBit.sleep(10000);
+        uBit.sleep(1000);
         if (uBit.serial.getRxBufferSize()>0){
-            ManagedString s = uBit.serial.read(sizeof(char)*3); // ou read de la taille du buffer
-            uBit.display.scroll(s.toCharArray());
-            uBit.radio.datagram.send(s.toCharArray());
+            dataReceived();
         }
     }
 }
