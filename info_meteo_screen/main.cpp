@@ -19,18 +19,32 @@ ManagedString key2;
 std::string session;
 std::string order = "TLHP";
 
+// Réception de la clé 2
 void onData(MicroBitEvent) {
     key2 = uBit.radio.datagram.recv();
+    
     uBit.serial.printf("Meteo key 2 received: %s\r\n", key2.toCharArray());
     isSessionOk = true;
 }
 
+// Réception de l'ordre d'affichage
 void onReceive(MicroBitEvent) {
     ManagedString s = uBit.radio.datagram.recv();
-    uBit.serial.printf("Meteo order received: %s\r\n", s.toCharArray());
-    order = s.toCharArray();
+    std::string decryptedData = decrypt(s.toCharArray(), session);
+
+    std::string rcvKey = decryptedData.substr(0, 11);
+
+    // Test si sessionKey OK
+    if(rcvKey == session) {
+        uBit.serial.printf("Meteo order received: %s\r\n", s.toCharArray());
+        order = s.toCharArray();
+    } else {
+        uBit.serial.printf("Meteo data received but wrong key: %s\r\n", s.toCharArray());
+    }
 }
 
+
+// Affiche les données sur l'écran et les envoie par RF
 void display_rf_loop(bme280 bme, tsl256x tsl, std::string order) {
 
     // INIT BME
