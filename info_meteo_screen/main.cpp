@@ -13,28 +13,30 @@ MicroBitI2C i2c(I2C_SDA0,I2C_SCL0);
 MicroBitPin P1(MICROBIT_ID_IO_P1, MICROBIT_PIN_P1, PIN_CAPABILITY_DIGITAL_OUT);
 ssd1306 screen(&uBit, &i2c, &P1);
 
-// Session management
+// Gestion de la session
 bool isSessionOk = false;
 ManagedString key2;
 std::string session;
+
+// Gestion de l'ordre d'affichage
 std::string order = "TLHP";
 
 // Réception de la clé 2 et gestion de l'ordre d'affichage sur l'écran
 void onData(MicroBitEvent) {
 
+    // Si on a pas de session c'est qu'on a reçu la seconde clé
     if(!isSessionOk) {
         key2 = uBit.radio.datagram.recv();
         uBit.serial.printf("Meteo key 2 received: %s\r\n", key2.toCharArray());
         isSessionOk = true;
-    } else {
+    } else { // Sinon c'est une maj de l'ordre => déchiffrement des données
         ManagedString s = uBit.radio.datagram.recv();
         std::string decryptedData = decrypt(s.toCharArray());
         std::string rcvKey = decryptedData.substr(0, 11);
 
         uBit.serial.printf("Meteo data received: %s\r\n", decryptedData.c_str());
 
-
-        // Test si sessionKey OK
+        // Test si sessionKey OK => on maj l'ordre
         if(strcmp(rcvKey.c_str(), session.c_str()) == 0) {
             uBit.serial.printf("Meteo order received: %s\r\n", decryptedData.c_str());
             order = decryptedData.substr(12);
@@ -117,10 +119,11 @@ int main() {
     bme280 bme(&uBit,&i2c);
     tsl256x tsl(&uBit,&i2c);
 
+    // Met l'écran à 0
     screen.clear();
     screen.update_screen();
 
-    // Génère la clé
+    // Génère la première clé
     int key1 = keyGen(&uBit);
     std::string key1Str = to_string(key1);
     uBit.serial.printf("Meteo key 1 generated: %d\r\n", key1);
@@ -149,7 +152,6 @@ int main() {
         // Affichage
         uBit.serial.printf("Meteo refresh screen\r\n");
         display_rf_loop(bme, tsl, order);
-
         uBit.sleep(1000);
     }
 
