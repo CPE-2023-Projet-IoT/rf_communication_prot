@@ -30,19 +30,12 @@ void sendKey(MicroBit* microBit, int key);
 std::string computeKey(MicroBit* microBit, std::string key1, std::string key2);
 
 /**
-* Chiffre le texte en utilisant une clé alphanumérique
-* @param texte Texte à chiffrer
+* Chiffre/déchiffre le texte en utilisant une clé alphanumérique
+* @param texte Texte à chiffrer/déchiffrer
 *
-* @return std::string Texte chiffré
+* @return std::string Texte chiffré/déchiffré
 */
 std::string encrypt(const std::string &texte);
-
-/**
-* Déchiffre le texte en utilisant une clé alphanumérique
-* @param textChiffre Texte à déchiffrer
-* @return std::string Texte déchiffré
-*/
-std::string decrypt(const std::string &texteChiffre);
 
 /**
  * Envoie les données à partir d'une std::string de données non chiffrées

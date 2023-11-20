@@ -58,7 +58,7 @@ void onData(MicroBitEvent)
 
         // Dechiffrement des données
         std::string encryptedData = s.toCharArray();
-        std::string decryptedData = decrypt(encryptedData);
+        std::string decryptedData = encrypt(encryptedData);
 
         std::string rcvKey = decryptedData.substr(0, 11);
 

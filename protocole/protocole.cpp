@@ -71,10 +71,10 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
 }
 
 /**
-* Chiffre le texte en utilisant une clé alphanumérique
-* @param texte Texte à chiffrer
+* Chiffre/déchiffre le texte en utilisant une clé alphanumérique
+* @param texte Texte à chiffrer/déchiffrer
 *
-* @return std::string Texte chiffré
+* @return std::string Texte chiffré/déchiffré
 */
 std::string encrypt(const std::string &texte) {
     std::string cle = "encryption";
@@ -86,24 +86,6 @@ std::string encrypt(const std::string &texte) {
     }
     
     return texteChiffre;
-}
-
-/**
-* Déchiffre le texte en utilisant une clé alphanumérique
-* @param textChiffre Texte à déchiffrer
-*
-* @return std::string Texte déchiffré
-*/
-std::string decrypt(const std::string &texteChiffre) {
-    std::string cle = "encryption";
-    std::string texteDechiffre = texteChiffre;
-    int longueurCle = cle.length();
-    
-    for (size_t i = 0; i < texteChiffre.length(); ++i) {
-     texteDechiffre[i] = (texteChiffre[i] ^ cle[i % longueurCle]);
-    }
-    
-    return texteDechiffre;
 }
 
 /**

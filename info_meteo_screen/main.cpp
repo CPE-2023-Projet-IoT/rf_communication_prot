@@ -31,7 +31,7 @@ void onData(MicroBitEvent) {
         isSessionOk = true;
     } else { // Sinon c'est une maj de l'ordre => déchiffrement des données
         ManagedString s = uBit.radio.datagram.recv();
-        std::string decryptedData = decrypt(s.toCharArray());
+        std::string decryptedData = encrypt(s.toCharArray());
         std::string rcvKey = decryptedData.substr(0, 11);
 
         uBit.serial.printf("Meteo data received: %s\r\n", decryptedData.c_str());
