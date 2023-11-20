@@ -71,37 +71,39 @@ std::string computeKey(MicroBit* microBit, std::string key1, std::string key2) {
 /**
 * Chiffre le texte en utilisant une clé alphanumérique
 * @param texte Texte à chiffrer
-* @param cle Clé alphanumérique
 *
 * @return std::string Texte chiffré
 */
-std::string encrypt(const std::string &texte, const std::string &cle) {
-    std::string texteChiffre = texte;
-    int longueurCle = cle.length();
+std::string encrypt(const std::string &texte) {
+    // std::string cle = "encryption";
+    // std::string texteChiffre = texte;
+    // int longueurCle = cle.length();
     
-    for (size_t i = 0; i < texte.length(); ++i) {
-        texteChiffre[i] = (texte[i] ^ cle[i % longueurCle]) % 94 + 32;
-    }
+    // for (size_t i = 0; i < texte.length(); ++i) {
+    //     texteChiffre[i] = (texte[i] ^ cle[i % longueurCle]) % 94 + 32;
+    // }
     
-    return texteChiffre;
+    // return texteChiffre;
+    return texte;
 }
 
 /**
 * Déchiffre le texte en utilisant une clé alphanumérique
 * @param textChiffre Texte à déchiffrer
-* @param cle Clé alphanumérique
 *
 * @return std::string Texte déchiffré
 */
-std::string decrypt(const std::string &texteChiffre, const std::string &cle) {
-    std::string texteDechiffre = texteChiffre;
-    int longueurCle = cle.length();
+std::string decrypt(const std::string &texteChiffre) {
+    // std::string cle = "encryption";
+    // std::string texteDechiffre = texteChiffre;
+    // int longueurCle = cle.length();
     
-    for (size_t i = 0; i < texteChiffre.length(); ++i) {
-        texteDechiffre[i] = (texteChiffre[i] ^ cle[i % longueurCle]) % 94 + 32;
-    }
+    // for (size_t i = 0; i < texteChiffre.length(); ++i) {
+    //     texteDechiffre[i] = (texteChiffre[i] ^ cle[i % longueurCle]) % 94 + 32;
+    // }
     
-    return texteDechiffre;
+    // return texteDechiffre;
+    return texteChiffre;
 }
 
 /**
@@ -115,7 +117,7 @@ std::string decrypt(const std::string &texteChiffre, const std::string &cle) {
 void sendData(MicroBit* microBit, std::string sessionKey, char code, std::string data) {
 
     // Concatène les données
-    std::string toSend = encrypt(encryptedKey + " " + encryptedCode + " " + encryptedData);
+    std::string toSend = encrypt(sessionKey + " " + code + " " + data);
 
     // Envoie les données
     microBit->radio.datagram.send(toSend.c_str());
