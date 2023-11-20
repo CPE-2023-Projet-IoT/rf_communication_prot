@@ -33,8 +33,10 @@ MicroBit uBit;
 bool session = false;
 std::string sessionKey;
 
+// Gestion des données reçues en série
 void serialDataReceived(){
 
+    // Si la session est OK et qu'on reçoit des données, on les transmert à l'autre carte
     if (session == true) {
         ManagedString s = uBit.serial.read(uBit.serial.getRxBufferSize(), ASYNC);
         
@@ -47,8 +49,10 @@ void serialDataReceived(){
     }
 }
 
+// Gestion des données reçues en RF
 void onData(MicroBitEvent)
 {
+    // Si la session est OK on déchiffre les données reçues sinon on met en place la session
     if (session == true){
         ManagedString s = uBit.radio.datagram.recv();
 
@@ -58,9 +62,7 @@ void onData(MicroBitEvent)
 
         std::string rcvKey = decryptedData.substr(0, 11);
 
-
-
-        // Test si sessionKey OK
+        // Test si sessionKey OK => on envoie les données en série
         if(strcmp(rcvKey.c_str(), sessionKey.c_str()) ==0) {
             std::string code = decryptedData.substr(12, 1);
             std::string data = decryptedData.substr(14);
@@ -97,14 +99,12 @@ int main()
     uBit.radio.setGroup(8);
 
     uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
+    uBit.serial.printf("Debut\n\r");
 
-    uBit.serial.printf("debut\n\r");
-
-    //release_fiber();
+    // Check des données reçues en série toutes les secondes
     while (1)
     {
         serialDataReceived();
-
         uBit.sleep(1000);
     }
 }
