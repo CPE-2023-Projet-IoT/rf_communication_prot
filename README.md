@@ -9,7 +9,7 @@ Ce dossier contient le code (main.cpp) de la carte Micro:bit qui possède les di
 ### Fonctionnement
 
 La carte commence par générer un nombre aléatoire à l'aide de la fonction `keyGen()` de `protocole.h` puis l'envoie à l'autre carte. Elle attend ensuite le nombre généré par cette carte puis créé une clé commune avec la fonction `computeKey()` de `protocole.h`. Cette clé lui permettra plus tard de prouver son identité à la seconde carte. Ensuite, elle rentre dans une boucle où elle récupère chaque seconde les données des capteurs, envoie les données à la seconde carte, puis met à jour l'écran OLED. L'envoi des données se fait dans le format suivant: `<clé de session> <code> <valeur>` où code est un identifiant de la donnée mesurée (T pour température par exemple). Les données sont ensuite chiffrées avec la fonction `encrypt()` de `protocole.h`.\
-Lors de la réception de données RF, si la session est déjà établie, la carte déchiffre les données, vérifie que la clé de reçue est correcte, puis met à jour une variable globale `order` correspondant à l'ordre d'affichage des données.
+Lors de la réception de données RF, si la session est déjà établie, la carte déchiffre les données avec la fonction `encrypt()` (A XOR B = C et C XOR B = A), vérifie que la clé de reçue est correcte, puis met à jour une variable globale `order` correspondant à l'ordre d'affichage des données.
 
 ## Dossier passerelle_microbit
 
