@@ -277,6 +277,11 @@ int ssd1306::update_screen()
     return ret;
 }
 
+void ssd1306::clear()
+{
+	buffer_set(gddram,0x00);
+}
+
 void ssd1306::display_char(uint8_t line, uint8_t col, uint8_t c)
 {
     uint8_t tile = (c > FIRST_FONT_CHAR) ? (c - FIRST_FONT_CHAR) : 0;

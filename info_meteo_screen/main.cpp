@@ -19,33 +19,36 @@ ManagedString key2;
 std::string session;
 std::string order = "TLHP";
 
-// Réception de la clé 2
+// Réception de la clé 2 et gestion de l'ordre d'affichage sur l'écran
 void onData(MicroBitEvent) {
-    key2 = uBit.radio.datagram.recv();
-    
-    uBit.serial.printf("Meteo key 2 received: %s\r\n", key2.toCharArray());
-    isSessionOk = true;
-}
 
-// Réception de l'ordre d'affichage
-void onReceive(MicroBitEvent) {
-    ManagedString s = uBit.radio.datagram.recv();
-    std::string decryptedData = decrypt(s.toCharArray(), session);
-
-    std::string rcvKey = decryptedData.substr(0, 11);
-
-    // Test si sessionKey OK
-    if(rcvKey == session) {
-        uBit.serial.printf("Meteo order received: %s\r\n", s.toCharArray());
-        order = s.toCharArray();
+    if(!isSessionOk) {
+        key2 = uBit.radio.datagram.recv();
+        uBit.serial.printf("Meteo key 2 received: %s\r\n", key2.toCharArray());
+        isSessionOk = true;
     } else {
-        uBit.serial.printf("Meteo data received but wrong key: %s\r\n", s.toCharArray());
-    }
-}
+        ManagedString s = uBit.radio.datagram.recv();
+        std::string decryptedData = decrypt(s.toCharArray());
+        std::string rcvKey = decryptedData.substr(0, 11);
 
+        uBit.serial.printf("Meteo data received: %s\r\n", decryptedData.c_str());
+
+
+        // Test si sessionKey OK
+        if(strcmp(rcvKey.c_str(), session.c_str()) == 0) {
+            uBit.serial.printf("Meteo order received: %s\r\n", decryptedData.c_str());
+            order = decryptedData.substr(12);
+        } else {
+            uBit.serial.printf("Meteo data received but wrong key: %s\r\n", s.toCharArray());
+        }
+    }
+
+}
 
 // Affiche les données sur l'écran et les envoie par RF
 void display_rf_loop(bme280 bme, tsl256x tsl, std::string order) {
+
+    screen.clear();
 
     // INIT BME
     uint32_t pressure = 0;
@@ -65,10 +68,10 @@ void display_rf_loop(bme280 bme, tsl256x tsl, std::string order) {
     tsl.sensor_read(&comb, &ir, &lux);
 
     // Récupération de l'ordre
-    int tempOrder = strchr(order.c_str(), 'T') + 1;
-    int humOrder = strchr(order.c_str(), 'H') + 1;
-    int pressOrder = strchr(order.c_str(), 'P') + 1;
-    int lumOrder = strchr(order.c_str(), 'L') + 1;
+    int tempOrder = order.find('T') + 1;
+    int humOrder = order.find('H') + 1;
+    int pressOrder = order.find('P') + 1;
+    int lumOrder = order.find('L') + 1;
 
     // Affichage BME
     ManagedString line = "Temp:" + ManagedString(tempInt/100) + "." + ManagedString(tempInt%100) +" C\r\n";
@@ -92,12 +95,13 @@ void display_rf_loop(bme280 bme, tsl256x tsl, std::string order) {
 
     map<char, std::string> data;
 
-    data[tempChar] = to_string(tempInt);
+    data[tempChar] = to_string(tempInt/100);
     data[lumChar] = to_string(lux);
     data[pressChar] = to_string(pressInt);
-    date[humChar] = to_string(humiInt);
+    data[humChar] = to_string(humiInt);
     uBit.serial.printf("Send data\r\n");
-    sendRf(&uBit,session, data);
+
+    sendRf(&uBit, session, data);
 
     // Update screen
     screen.update_screen();
@@ -109,8 +113,12 @@ int main() {
     // Init Micro:bit et capteurs
     uBit.init();
     uBit.radio.enable();
+    uBit.radio.setGroup(8);
     bme280 bme(&uBit,&i2c);
     tsl256x tsl(&uBit,&i2c);
+
+    screen.clear();
+    screen.update_screen();
 
     // Génère la clé
     int key1 = keyGen(&uBit);
@@ -120,7 +128,8 @@ int main() {
     uBit.radio.datagram.send(key1Str.c_str());
     uBit.serial.printf("Meteo key 1 sent\r\nWaiting for key 2...\r\n");
 
-    // Attend la clé pour initier la connection
+
+    // Attend la clé pour initier la connection et l'ordre d'affichage si la session existe déjà
     uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
 
     while(!isSessionOk) {
@@ -140,9 +149,6 @@ int main() {
         // Affichage
         uBit.serial.printf("Meteo refresh screen\r\n");
         display_rf_loop(bme, tsl, order);
-    
-        // Reception d'une info de la passerelle
-        uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onReceive);
 
         uBit.sleep(1000);
     }
